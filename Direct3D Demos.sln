@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Buffers", "Buffers\Buffers.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Textures", "Textures\Textures.vcxproj", "{D6F7ABA3-B833-401D-9A4B-0165E2576C48}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Diffuse Lighting", "Diffuse Lighting\Diffuse Lighting.vcxproj", "{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{D6F7ABA3-B833-401D-9A4B-0165E2576C48}.Release|x64.Build.0 = Release|x64
 		{D6F7ABA3-B833-401D-9A4B-0165E2576C48}.Release|x86.ActiveCfg = Release|Win32
 		{D6F7ABA3-B833-401D-9A4B-0165E2576C48}.Release|x86.Build.0 = Release|Win32
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Debug|x64.ActiveCfg = Debug|x64
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Debug|x64.Build.0 = Debug|x64
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Debug|x86.ActiveCfg = Debug|Win32
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Debug|x86.Build.0 = Debug|Win32
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Release|x64.ActiveCfg = Release|x64
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Release|x64.Build.0 = Release|x64
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Release|x86.ActiveCfg = Release|Win32
+		{F25AE6CA-5A97-4EB5-89C4-F8CEA6AA74F2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
