@@ -2,10 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Common">
-      <UniqueIdentifier>c8ab5369-9af4-41bd-91df-dfcfe2613180</UniqueIdentifier>
+      <UniqueIdentifier>f3080b89-acf2-478f-afe2-caa12afe62d4</UniqueIdentifier>
     </Filter>
     <Filter Include="Assets">
-      <UniqueIdentifier>5171b0ed-c70a-4fe9-be57-0144faf9e3f3</UniqueIdentifier>
+      <UniqueIdentifier>c953ee01-ad51-4960-a404-88ff7c006db5</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dds;dlg;fbx;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
@@ -18,6 +18,7 @@
     <ClInclude Include="DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="ReadData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -41,8 +42,8 @@
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="DiffusePS.hlsl" />
-    <FxCompile Include="DiffuseVS.hlsl" />
+    <FxCompile Include="LightingVS.hlsl" />
+    <FxCompile Include="LightingPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

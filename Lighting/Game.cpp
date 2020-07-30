@@ -25,12 +25,19 @@ struct ConstantBuffer
 	XMMATRIX projMatrix;
 };
 
+struct CameraBuffer
+{
+	XMFLOAT3 cameraPosition;
+	float padding;
+};
+
 struct LightBuffer
 {
 	XMFLOAT4 ambientColor;
 	XMFLOAT4 diffuseColor;
+	XMFLOAT4 specularColor;
 	XMFLOAT3 lightDirection;
-	float padding;
+	float specularPower;
 };
 
 Game::Game() noexcept(false) :
@@ -122,10 +129,20 @@ void Game::Render()
 	memcpy(mappedMatrix.pData, &constantBuffer, sizeof(ConstantBuffer));
 	context->Unmap(m_constantBuffer.Get(), 0);
 
+	CameraBuffer cameraBuffer = {};
+	cameraBuffer.cameraPosition = XMFLOAT3(0.0f, 0.0f, -8.0f);
+
+	D3D11_MAPPED_SUBRESOURCE mappedCamera;
+	DX::ThrowIfFailed(context->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedCamera));
+	memcpy(mappedCamera.pData, &cameraBuffer, sizeof(CameraBuffer));
+	context->Unmap(m_cameraBuffer.Get(), 0);
+
 	LightBuffer lightBuffer = {};
-	lightBuffer.lightDirection = XMFLOAT3(0.0f, -1.0f, 0.0f);
+	lightBuffer.lightDirection = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	lightBuffer.ambientColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	lightBuffer.diffuseColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	lightBuffer.specularColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	lightBuffer.specularPower = 35.0f;
 
 	D3D11_MAPPED_SUBRESOURCE mappedLight;
 	DX::ThrowIfFailed(context->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedLight));
@@ -134,6 +151,7 @@ void Game::Render()
 
 	context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
 	context->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+	context->VSSetConstantBuffers(1, 1, m_cameraBuffer.GetAddressOf());
 	context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 	context->PSSetConstantBuffers(0, 1, m_lightBuffer.GetAddressOf());
 	context->PSSetShaderResources(0, 1, m_texture.GetAddressOf());
@@ -227,11 +245,11 @@ void Game::CreateDeviceDependentResources()
 	// TODO: Initialize device dependent objects here (independent of window size).
 
 	// Initialize the pixel shader.
-	auto blob = DX::ReadData(L"AmbientPS.cso");
+	auto blob = DX::ReadData(L"LightingPS.cso");
 	DX::ThrowIfFailed(device->CreatePixelShader(blob.data(), blob.size(), nullptr, m_pixelShader.GetAddressOf()));
 
 	// Initialize the vertex shader.
-	blob = DX::ReadData(L"AmbientVS.cso");
+	blob = DX::ReadData(L"LightingVS.cso");
 	DX::ThrowIfFailed(device->CreateVertexShader(blob.data(), blob.size(), nullptr, m_vertexShader.GetAddressOf()));
 
 	// Create the input layout.
@@ -328,7 +346,7 @@ void Game::CreateDeviceDependentResources()
 	XMStoreFloat4x4(&m_world, XMMatrixIdentity());
 
 	// Initialize the view matrix
-	static const XMVECTORF32 eye = { 0.0f, 2.0f, -8.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 1.0f, -8.0f, 0.0f };
 	static const XMVECTORF32 target = { 0.0f, 1.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0 };
 	XMStoreFloat4x4(&m_view, XMMatrixLookAtLH(eye, target, up));
@@ -341,6 +359,15 @@ void Game::CreateDeviceDependentResources()
 	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	DX::ThrowIfFailed(device->CreateBuffer(&constantBufferDesc, nullptr, m_constantBuffer.GetAddressOf()));
+
+	// Create the camera buffer
+	D3D11_BUFFER_DESC cameraBufferDesc = {};
+	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraBufferDesc.ByteWidth = sizeof(CameraBuffer);
+	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	DX::ThrowIfFailed(device->CreateBuffer(&cameraBufferDesc, nullptr, m_cameraBuffer.GetAddressOf()));
 
 	// Create the light constant buffer
 	D3D11_BUFFER_DESC lightBufferDesc = {};
@@ -371,7 +398,7 @@ void Game::CreateDeviceDependentResources()
 
 	// Load the texture.
 	DX::ThrowIfFailed(CreateWICTextureFromFile(device,
-		L"D:/Dev/Direct3D Demos/Model Loading/bricks2.jpg",
+		L"bricks2.jpg",
 		nullptr, m_texture.GetAddressOf()));
 }
 
