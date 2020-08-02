@@ -23,6 +23,7 @@ struct PixelInput
 	float4 pos : SV_POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
+	float3 worldPos : POSITION;
 	float3 viewDirection : TEXCOORD1;
 };
 
@@ -41,8 +42,8 @@ PixelInput main(VertexInput input)
 	output.normal = mul(input.normal, (float3x3)worldMatrix);
 	output.normal = normalize(output.normal);
 
-	float3 worldPosition = mul(input.pos, worldMatrix).xyz;
-	output.viewDirection = normalize(cameraPosition - worldPosition);
+	output.worldPos = mul(input.pos, worldMatrix).xyz;
+	output.viewDirection = normalize(cameraPosition - output.worldPos);
 
 	return output;
 }

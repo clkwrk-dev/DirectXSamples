@@ -31,13 +31,30 @@ struct CameraBuffer
 	float padding;
 };
 
-struct LightBuffer
+struct DirectionalLight
 {
 	XMFLOAT4 ambientColor;
 	XMFLOAT4 diffuseColor;
 	XMFLOAT4 specularColor;
-	XMFLOAT3 lightDirection;
+	XMFLOAT3 direction;
 	float specularPower;
+};
+
+struct PointLight
+{
+	XMFLOAT4 ambientColor;
+	XMFLOAT4 diffuseColor;
+	XMFLOAT4 specularColor;
+	XMFLOAT3 position;
+	float range;
+	XMFLOAT3 attenuation;
+	float specularPower;
+};
+
+struct LightBuffer
+{
+	DirectionalLight directionalLight;
+	PointLight pointLight;
 };
 
 Game::Game() noexcept(false) :
@@ -130,19 +147,31 @@ void Game::Render()
 	context->Unmap(m_constantBuffer.Get(), 0);
 
 	CameraBuffer cameraBuffer = {};
-	cameraBuffer.cameraPosition = XMFLOAT3(0.0f, 0.0f, -8.0f);
+	cameraBuffer.cameraPosition = XMFLOAT3(0.0f, 2.0f, -8.0f);
 
 	D3D11_MAPPED_SUBRESOURCE mappedCamera;
 	DX::ThrowIfFailed(context->Map(m_cameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedCamera));
 	memcpy(mappedCamera.pData, &cameraBuffer, sizeof(CameraBuffer));
 	context->Unmap(m_cameraBuffer.Get(), 0);
 
+	DirectionalLight dl = {};
+	dl.direction = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	dl.ambientColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	dl.diffuseColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	dl.specularColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	dl.specularPower = 35.0f;
+
+	PointLight pl = {};
+	pl.ambientColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	pl.diffuseColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	pl.specularColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	pl.specularPower = 1.0f;
+	pl.position = XMFLOAT3(0.0f, 1.0f, -4.0f);
+	pl.attenuation = XMFLOAT3(0.0f, 0.1f, 0.0f);
+
 	LightBuffer lightBuffer = {};
-	lightBuffer.lightDirection = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	lightBuffer.ambientColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	lightBuffer.diffuseColor = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	lightBuffer.specularColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightBuffer.specularPower = 35.0f;
+	lightBuffer.pointLight = pl;
+	lightBuffer.directionalLight = dl;
 
 	D3D11_MAPPED_SUBRESOURCE mappedLight;
 	DX::ThrowIfFailed(context->Map(m_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedLight));
@@ -158,6 +187,17 @@ void Game::Render()
 	context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
 	context->DrawIndexed(36, 0, 0);
+
+	for (UINT i = 0; i < 1; ++i)
+	{
+		constantBuffer.worldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&m_world) * XMMatrixTranslation(-4.0f, 1.0f, 3.0f));
+
+		DX::ThrowIfFailed(context->Map(m_constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedMatrix));
+		memcpy(mappedMatrix.pData, &constantBuffer, sizeof(ConstantBuffer));
+		context->Unmap(m_constantBuffer.Get(), 0);
+
+		context->DrawIndexed(36, 0, 0);
+	}
 
 	m_deviceResources->PIXEndEvent();
 
@@ -346,7 +386,7 @@ void Game::CreateDeviceDependentResources()
 	XMStoreFloat4x4(&m_world, XMMatrixIdentity());
 
 	// Initialize the view matrix
-	static const XMVECTORF32 eye = { 0.0f, 1.0f, -8.0f, 0.0f };
+	static const XMVECTORF32 eye = { 0.0f, 2.0f, -8.0f, 0.0f };
 	static const XMVECTORF32 target = { 0.0f, 1.0f, 0.0f, 0.0f };
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0 };
 	XMStoreFloat4x4(&m_view, XMMatrixLookAtLH(eye, target, up));
